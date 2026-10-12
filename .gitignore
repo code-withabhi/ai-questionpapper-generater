@@ -47,7 +47,8 @@ Thumbs.db
 # PDF outputs (development)
 server/temp-pdfs/
 
-# Markdown files
+# Markdown files (keep README.md)
 *.md
+!README.md
 docs/*.md
 
