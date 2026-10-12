@@ -57,6 +57,5 @@ const topicSchema = new Schema<ITopic>(
 
 // Compound indexes for efficient queries
 topicSchema.index({ chapterId: 1, order: 1 });
-topicSchema.index({ subjectId: 1 });
 
 export const Topic = model<ITopic>('Topic', topicSchema);
