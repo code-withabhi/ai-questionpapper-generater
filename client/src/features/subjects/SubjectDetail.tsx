@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, FolderTree, Layers, FileQuestion } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, FolderTree, FileQuestion } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Subject, Chapter } from '@/types';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import ChaptersList from '@/features/chapters/ChaptersList';
+import SubjectDialog from './SubjectDialog';
 
 export default function SubjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +18,9 @@ export default function SubjectDetail() {
   
   const [subject, setSubject] = useState<Subject | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [questionCount, setQuestionCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -29,12 +32,14 @@ export default function SubjectDetail() {
 
   const fetchSubjectAndChapters = async () => {
     try {
-      const [subjectRes, chaptersRes] = await Promise.all([
+      const [subjectRes, chaptersRes, questionsRes] = await Promise.all([
         api.get(`/subjects/${id}`),
         api.get(`/chapters/subject/${id}`),
+        api.get(`/questions?subjectId=${id}&limit=1`),
       ]);
       setSubject(subjectRes.data);
-      setChapters(chaptersRes.data);
+      setChapters(chaptersRes.data || []);
+      setQuestionCount(questionsRes.data?.pagination?.total || 0);
     } catch (error) {
       toast({
         title: 'Error',
@@ -119,11 +124,9 @@ export default function SubjectDetail() {
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link to={`/subjects/${subject._id}/edit`}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </Link>
+          <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit
           </Button>
           <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
             <Trash2 className="mr-2 h-4 w-4" />
@@ -132,9 +135,7 @@ export default function SubjectDetail() {
         </div>
       </div>
 
-
-
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Chapters</CardTitle>
@@ -146,20 +147,11 @@ export default function SubjectDetail() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Topics</CardTitle>
-            <Layers className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Questions</CardTitle>
             <FileQuestion className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{questionCount}</div>
           </CardContent>
         </Card>
       </div>
@@ -176,6 +168,13 @@ export default function SubjectDetail() {
           />
         </CardContent>
       </Card>
+
+      <SubjectDialog
+        open={editDialogOpen}
+        subject={subject}
+        onClose={() => setEditDialogOpen(false)}
+        onSuccess={fetchSubjectAndChapters}
+      />
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>

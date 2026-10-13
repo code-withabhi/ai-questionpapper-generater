@@ -3,10 +3,12 @@ import { Schema, model, Document, Types } from 'mongoose';
 export type QuestionType =
   | 'mcq-single'
   | 'mcq-multiple'
+  | 'multiple-choice'
   | 'true-false'
   | 'fill-blank'
   | 'short-answer'
   | 'long-answer'
+  | 'essay'
   | 'numerical'
   | 'programming'
   | 'case-study'
@@ -118,10 +120,12 @@ const questionSchema = new Schema<IQuestion>(
       enum: [
         'mcq-single',
         'mcq-multiple',
+        'multiple-choice',
         'true-false',
         'fill-blank',
         'short-answer',
         'long-answer',
+        'essay',
         'numerical',
         'programming',
         'case-study',
@@ -209,6 +213,25 @@ questionSchema.index({ ownerId: 1, subjectId: 1 });
 questionSchema.index({ subjectId: 1, difficulty: 1, marks: 1 });
 questionSchema.index({ normalizedTextHash: 1, deletedAt: 1 });
 questionSchema.index({ tags: 1 });
+
+// Normalization: map aliases before validation
+questionSchema.pre('validate', function (next) {
+  if (this.questionType === ('multiple-choice' as any)) {
+    const correctCount = (this.options || []).filter((opt) => opt.isCorrect).length;
+    this.questionType = correctCount > 1 ? 'mcq-multiple' : 'mcq-single';
+  } else if (this.questionType === ('essay' as any)) {
+    this.questionType = 'long-answer';
+  }
+
+  if (this.questionType === 'true-false' && (!this.options || this.options.length < 2)) {
+    const isTrue = String(this.correctAnswer || '').trim().toLowerCase() === 'true';
+    this.options = [
+      { text: 'True', isCorrect: isTrue },
+      { text: 'False', isCorrect: !isTrue },
+    ];
+  }
+  next();
+});
 
 // Validation: MCQ questions must have options
 questionSchema.pre('save', function (next) {

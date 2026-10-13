@@ -10,6 +10,8 @@ import chapterRouter from './routes/chapter.routes.js';
 import topicRouter from './routes/topic.routes.js';
 import questionRouter from './routes/question.routes.js';
 import dashboardRouter from './routes/dashboard.routes.js';
+import aiRouter from './routes/ai.routes.js';
+import paperRouter from './routes/paper.routes.js';
 import { generalLimiter } from './middleware/rateLimiter.js';
 
 export function createApp(): Application {
@@ -48,6 +50,8 @@ export function createApp(): Application {
   app.use('/api/v1/topics', topicRouter);
   app.use('/api/v1/questions', questionRouter);
   app.use('/api/v1/dashboard', dashboardRouter);
+  app.use('/api/v1/ai', aiRouter);
+  app.use('/api/v1/papers', paperRouter);
 
   // 404 handler
   app.use(notFound);

@@ -188,3 +188,64 @@ export const logout = async (_req: AuthRequest, res: Response): Promise<void> =>
   res.clearCookie('refreshToken');
   res.json({ message: 'Logged out successfully' });
 };
+
+export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) throw new AppError(401, 'Authentication required');
+    const user = await User.findById(req.user.userId).select('-passwordHash');
+    if (!user) throw new AppError(404, 'User not found');
+    res.json({ user });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    logger.error({ err: error }, 'Get user error');
+    throw new AppError(500, 'Failed to fetch user profile');
+  }
+};
+
+export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) throw new AppError(401, 'Authentication required');
+    const { name } = req.body;
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      throw new AppError(400, 'Valid name is required (min 2 characters)');
+    }
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { name: name.trim() },
+      { new: true }
+    ).select('-passwordHash');
+    if (!user) throw new AppError(404, 'User not found');
+    logger.info({ userId: user._id }, 'User profile updated');
+    res.json({ user, message: 'Profile updated successfully' });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    logger.error({ err: error }, 'Update profile error');
+    throw new AppError(500, 'Failed to update profile');
+  }
+};
+
+export const changePassword = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) throw new AppError(401, 'Authentication required');
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
+      throw new AppError(400, 'New password must be at least 8 characters');
+    }
+    const user = await User.findById(req.user.userId);
+    if (!user) throw new AppError(404, 'User not found');
+
+    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isValid) {
+      throw new AppError(400, 'Current password is incorrect');
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    await user.save();
+    logger.info({ userId: user._id }, 'Password changed successfully');
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    logger.error({ err: error }, 'Change password error');
+    throw new AppError(500, 'Failed to change password');
+  }
+};

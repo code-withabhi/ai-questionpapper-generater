@@ -1,40 +1,55 @@
-# AI Question Paper Generator
+# AI-Powered Question Paper Generator & Algorithmic Constraint Engine
 
-A professional full-stack web application for generating balanced, AI-powered question papers using the MERN stack and Google Gemini API.
+A professional full-stack web platform for generating balanced, constraint-compliant examination question papers using the MERN stack, Google Gemini API, and deterministic DSA optimization algorithms.
 
-## Features
+---
 
-- 🔐 Secure authentication with role-based access (Teacher/Admin)
-- 📚 Subject, chapter, and topic management
-- 💡 AI-powered question generation using Google Gemini
-- 🎯 Intelligent paper generation with DSA-based algorithms
-- 📝 Question bank with advanced search and filters
-- 📄 PDF export for question papers and answer keys
-- 🔄 Version control and paper history
-- 📊 Admin dashboard and usage tracking
+## 🌟 Key Features
 
-## Technology Stack
+- 🔐 **Authentication & Security**:
+  - JWT-based authentication with access and refresh tokens.
+  - bcrypt password hashing (10 rounds) and HTTP-only cookie support.
+  - Strict multi-tenant isolation ensuring instructors manage only their own subjects, questions, and papers.
+  - Helmet security headers, CORS origin whitelisting, and Express rate limiting.
 
-### Frontend
-- React 18 with TypeScript
-- Vite for blazing-fast development
-- Tailwind CSS + shadcn/ui for modern UI
-- TanStack Query for server state management
-- React Router for navigation
-- React Hook Form + Zod for form validation
+- 📚 **Curriculum Taxonomy**:
+  - 3-tier hierarchy: **Subject ➔ Chapter ➔ Topic**.
+  - Dynamic cascading selectors and quick-creation modals.
 
-### Backend
-- Node.js + Express with TypeScript
-- MongoDB + Mongoose for data persistence
-- Google Gemini API for AI question generation
-- JWT-based authentication
-- Pino for structured logging
-- PDFKit/Puppeteer for PDF generation
+- 💡 **AI Question Generator (Google Gemini)**:
+  - Automated question generation mapped to Bloom's Taxonomy (*Remember, Understand, Apply, Analyze, Evaluate, Create*).
+  - Multi-model fallback queue (`gemini-3.6-flash` ➔ `gemini-3.5-flash` ➔ `gemini-3.5-flash-lite`) to survive upstream 503 high-demand events.
+  - Automatic JSON schema normalization and option verification.
+  - Single-click or batch ingestion directly into the Question Bank.
 
-### Testing
-- Vitest for unit tests
-- Supertest for API integration tests
-- React Testing Library for component tests
+- 🎯 **Algorithmic DSA Paper Generator**:
+  - **$O(1)$ Duplicate Elimination**: Normalized whitespace and case hashing with Set/Map indexes to avoid question repeats.
+  - **Greedy Variety Heuristic**: Prioritizes underrepresented topics and penalizes frequently reused questions.
+  - **Bounded Backtracking Subset-Sum**: Explores question combinations with branch pruning to satisfy exact section target marks and difficulty quotas (Easy / Medium / Hard).
+
+- 📊 **Validation & Version Control**:
+  - One-click constraint validator report card checking total marks match, difficulty distribution, and topic diversity.
+  - Paper version snapshots (`v1`, `v2`, etc.) in `versionHistory` for immutable audit trails.
+
+- 📄 **Dual PDF Generation**:
+  - Vector-crisp PDFKit streaming engine.
+  - **Student Exam Paper**: College header, student details block, instructions, clean section layout.
+  - **Teacher Answer Key / Marking Scheme**: Solutions, correct options, and marking rubrics.
+
+- 🧪 **Comprehensive Automated Testing**:
+  - 12 unit tests powered by Vitest covering the DSA engine, AI generation fallback, and Auth tenant isolation.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Radix UI / shadcn/ui, TanStack Query, React Hook Form, Lucide Icons |
+| **Backend** | Node.js, Express (ES Modules), TypeScript, Mongoose ODM, Zod, PDFKit, Pino |
+| **Database** | MongoDB Atlas (Cloud) |
+| **AI / LLM** | Google Gemini API (`@google/generative-ai`) with dynamic model fallback |
+| **Testing** | Vitest (12/12 passing unit tests across DSA, AI, and Auth security) |
 
 ## Prerequisites
 
@@ -128,70 +143,46 @@ ai-question-paper-generator/
 │   │   └── validators/   # Request validation schemas
 │   └── package.json
 ├── docs/                 # Documentation
+├── ppt.txt               # Master AI Prompt & 12-Slide Deck Presentation Script
 └── package.json          # Root package.json
-
 ```
 
 ## Available Scripts
 
-- `npm run dev` - Run both client and server in development mode
-- `npm run build` - Build both client and server for production
-- `npm run test` - Run all tests
-- `npm run lint` - Lint all code
+- `npm run dev` - Run both client and server concurrently
+- `npm run dev:server` - Run backend with tsx hot reload
+- `npm run dev:client` - Run frontend with Vite
+- `npm run build` - Build both workspaces for production
+- `npm run test` - Run automated test suites (Vitest)
+- `npm run type-check` - Run TypeScript validation across all workspaces
+- `npm run lint` - Run ESLint across codebases
 - `npm run format` - Format code with Prettier
-- `npm run type-check` - Run TypeScript type checking
 
-## Testing
+## Database Seeding (Sample Data)
 
-```bash
-# Run all tests
-npm test
-
-# Run client tests
-npm run test --workspace=client
-
-# Run server tests
-npm run test --workspace=server
-```
-
-## Building for Production
+To seed initial subjects (Computer Networks, DBMS, AI & Soft Computing) and questions:
 
 ```bash
-# Build both applications
-npm run build
-
-# Build separately
-npm run build:client
-npm run build:server
+npm --prefix server run seed
 ```
 
-## Deployment
+## Testing & Verification
 
-See [docs/deployment.md](docs/deployment.md) for detailed deployment instructions.
+Run the test suite covering DSA Engine, Gemini fallback, and Auth isolation:
 
-## Security
+```bash
+npm --prefix server test
+```
 
-- All API keys are server-side only
-- JWT-based authentication with refresh tokens
-- Role-based authorization
-- Request validation and sanitization
-- Rate limiting on sensitive endpoints
-- HTTPS required in production
+Expected result: **12 tests passed across 3 test files**.
 
-## API Documentation
+## Presentation Slide Deck (PPT)
 
-API endpoints are documented at `/api/v1/docs` when the server is running in development mode.
-
-## Contributing
-
-1. Follow the existing code style
-2. Write tests for new features
-3. Update documentation as needed
-4. Ensure all tests pass before submitting
+A complete ready-to-use 12-slide presentation prompt and speaking script for your project defense / viva is provided in [`ppt.txt`](ppt.txt). You can paste it into **Gamma.app**, **ChatGPT**, **Claude**, or **Microsoft Copilot** to auto-generate visual slides.
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT License - See LICENSE file for details.
 
 ## Support
 

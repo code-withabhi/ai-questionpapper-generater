@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Book, FolderTree, Layers, FileQuestion } from 'lucide-react';
+import { Plus, Search, Book, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Subject } from '@/types';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import SubjectDialog from './SubjectDialog';
 
 interface SubjectWithCounts extends Subject {
   chapterCount?: number;
@@ -19,6 +20,8 @@ export default function SubjectsList() {
   const [subjects, setSubjects] = useState<SubjectWithCounts[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -28,7 +31,8 @@ export default function SubjectsList() {
   const fetchSubjects = async () => {
     try {
       const response = await api.get('/subjects');
-      setSubjects(response.data.subjects || []);
+      const list = response.data?.data || response.data?.subjects || (Array.isArray(response.data) ? response.data : []);
+      setSubjects(list);
     } catch (error) {
       toast({
         title: 'Error',
@@ -76,11 +80,9 @@ export default function SubjectsList() {
           <h1 className="text-3xl font-bold">Subjects</h1>
           <p className="text-muted-foreground mt-1">Manage your subjects and organize content</p>
         </div>
-        <Button asChild>
-          <Link to="/subjects/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Subject
-          </Link>
+        <Button onClick={() => { setEditingSubject(null); setDialogOpen(true); }}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Subject
         </Button>
       </div>
 
@@ -94,8 +96,6 @@ export default function SubjectsList() {
         />
       </div>
 
-
-
       {filteredSubjects.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -108,52 +108,66 @@ export default function SubjectsList() {
                 ? 'Try adjusting your search terms'
                 : 'Create your first subject to start building your question bank'}
             </p>
+            {!searchTerm && (
+              <Button onClick={() => { setEditingSubject(null); setDialogOpen(true); }}>
+                <Plus className="mr-2 h-4 w-4" /> Create Subject
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredSubjects.map((subject) => (
-            <Link key={subject._id} to={`/subjects/${subject._id}`}>
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
+            <Card key={subject._id} className="hover:shadow-lg transition-shadow h-full flex flex-col justify-between">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <Link to={`/subjects/${subject._id}`} className="hover:underline">
                       <CardTitle className="text-lg">{subject.name}</CardTitle>
-                      <Badge variant="outline">{subject.code}</Badge>
-                    </div>
+                    </Link>
+                    {subject.code && <Badge variant="outline">{subject.code}</Badge>}
+                  </div>
+                  <div className="flex items-center gap-1">
                     {subject.shared && <Badge variant="secondary">Shared</Badge>}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Edit Subject"
+                      onClick={() => {
+                        setEditingSubject(subject);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground">{subject.course}</p>
-                </CardHeader>
-                <CardContent>
-                  {subject.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                      {subject.description}
-                    </p>
-                  )}
-                  <div className="grid grid-cols-3 gap-2 pt-4 border-t">
-                    <div className="flex flex-col items-center text-center">
-                      <FolderTree className="h-4 w-4 text-muted-foreground mb-1" />
-                      <span className="text-sm font-semibold">{subject.chapterCount || 0}</span>
-                      <span className="text-xs text-muted-foreground">Chapters</span>
-                    </div>
-                    <div className="flex flex-col items-center text-center">
-                      <Layers className="h-4 w-4 text-muted-foreground mb-1" />
-                      <span className="text-sm font-semibold">{subject.topicCount || 0}</span>
-                      <span className="text-xs text-muted-foreground">Topics</span>
-                    </div>
-                    <div className="flex flex-col items-center text-center">
-                      <FileQuestion className="h-4 w-4 text-muted-foreground mb-1" />
-                      <span className="text-sm font-semibold">{subject.questionCount || 0}</span>
-                      <span className="text-xs text-muted-foreground">Questions</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                </div>
+                <p className="text-sm text-muted-foreground">{subject.course}</p>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col justify-between">
+                {subject.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                    {subject.description}
+                  </p>
+                )}
+                <div className="pt-3 border-t flex justify-end">
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/subjects/${subject._id}`}>View Syllabus</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
+
+      <SubjectDialog
+        open={dialogOpen}
+        subject={editingSubject}
+        onClose={() => { setDialogOpen(false); setEditingSubject(null); }}
+        onSuccess={fetchSubjects}
+      />
     </div>
   );
 }

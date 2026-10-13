@@ -52,8 +52,9 @@ export default function QuestionsList() {
         ...filters,
       });
       const res = await api.get<PaginatedResponse<Question>>(`/questions?${params}`);
-      setQuestions(res.data.questions);
-      setPagination(res.data.pagination);
+      const list = (res.data?.questions || (res.data as any)?.data || []) as Question[];
+      setQuestions(list);
+      setPagination(res.data?.pagination || { page: 1, limit: 20, total: list.length, totalPages: 1 });
     } catch (error: any) {
       toast({ title: 'Error', description: error.response?.data?.message || 'Failed to load questions', variant: 'destructive' });
     } finally {
@@ -143,7 +144,7 @@ export default function QuestionsList() {
                           {sub && <span className="text-xs text-muted-foreground flex items-center gap-1"><BookOpen className="h-3 w-3" />{sub}</span>}
                           {top && <span className="text-xs text-muted-foreground flex items-center gap-1"><Layers className="h-3 w-3" />{top}</span>}
                         </div>
-                        <p className="text-sm font-medium line-clamp-2">{q.text}</p>
+                        <p className="text-sm font-medium line-clamp-2">{q.text || (q as any).questionText}</p>
                         {q.tags && q.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {q.tags.map(t => <span key={t} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">#{t}</span>)}

@@ -112,3 +112,25 @@ export interface PaginatedResponse<T> {
   };
 }
 
+export interface PaperSection {
+  title: string;
+  instructions?: string;
+  marksPerQuestion: number;
+  questionIds: Question[] | string[];
+}
+
+export interface Paper {
+  _id: string;
+  title: string;
+  subjectId: string | { _id: string; name: string; code: string };
+  durationMinutes: number;
+  targetTotalMarks: number;
+  instructions?: string;
+  status: 'draft' | 'finalized';
+  version?: number;
+  sections: PaperSection[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+

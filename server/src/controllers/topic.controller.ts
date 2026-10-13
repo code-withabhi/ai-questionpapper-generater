@@ -9,7 +9,7 @@ import { logger } from '../utils/logger.js';
 
 const createTopicSchema = z.object({
   chapterId: z.string().min(1),
-  subjectId: z.string().min(1),
+  subjectId: z.string().optional(),
   title: z.string().min(2).max(200),
   description: z.string().max(1000).optional(),
   learningObjectives: z.array(z.string().max(500)).optional(),
@@ -23,20 +23,22 @@ export const createTopic = async (req: AuthRequest, res: Response): Promise<void
     if (!req.user) throw new AppError(401, 'Authentication required');
 
     const data = createTopicSchema.parse(req.body);
-    const [chapter, subject] = await Promise.all([
-      Chapter.findById(data.chapterId),
-      Subject.findById(data.subjectId),
-    ]);
-
-    if (!chapter || !subject) {
-      throw new AppError(404, 'Chapter or subject not found');
+    const chapter = await Chapter.findById(data.chapterId);
+    if (!chapter) {
+      throw new AppError(404, 'Chapter not found');
     }
 
-    if (chapter.subjectId.toString() !== data.subjectId) {
+    const targetSubjectId = data.subjectId || chapter.subjectId.toString();
+    const subject = await Subject.findById(targetSubjectId);
+    if (!subject) {
+      throw new AppError(404, 'Subject not found');
+    }
+
+    if (chapter.subjectId.toString() !== targetSubjectId) {
       throw new AppError(400, 'Chapter does not belong to this subject');
     }
 
-    if (subject.ownerId.toString() !== req.user.userId) {
+    if (subject.ownerId.toString() !== req.user.userId && !subject.shared) {
       throw new AppError(403, 'Only subject owner can create topics');
     }
 
@@ -47,7 +49,10 @@ export const createTopic = async (req: AuthRequest, res: Response): Promise<void
       data.order = maxTopic ? maxTopic.order + 1 : 0;
     }
 
-    const topic = await Topic.create(data);
+    const topic = await Topic.create({
+      ...data,
+      subjectId: chapter.subjectId,
+    });
     logger.info({ userId: req.user.userId, topicId: topic._id }, 'Topic created');
     res.status(201).json(topic);
   } catch (error) {

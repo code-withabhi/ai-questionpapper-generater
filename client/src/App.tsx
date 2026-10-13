@@ -9,6 +9,10 @@ import SubjectsList from '@/features/subjects/SubjectsList';
 import SubjectDetail from '@/features/subjects/SubjectDetail';
 import ChapterDetail from '@/features/chapters/ChapterDetail';
 import QuestionsList from '@/features/questions/QuestionsList';
+import AIGeneratePage from '@/features/ai-generate/AIGeneratePage';
+import PapersList from '@/features/papers/PapersList';
+import PaperDetail from '@/features/papers/PaperDetail';
+import SettingsPage from '@/features/settings/SettingsPage';
 
 function App() {
   return (
@@ -28,6 +32,10 @@ function App() {
                     <Route path="/subjects/:id" element={<SubjectDetail />} />
                     <Route path="/subjects/:subjectId/chapters/:chapterId" element={<ChapterDetail />} />
                     <Route path="/questions" element={<QuestionsList />} />
+                    <Route path="/ai-generate" element={<AIGeneratePage />} />
+                    <Route path="/papers" element={<PapersList />} />
+                    <Route path="/papers/:id" element={<PaperDetail />} />
+                    <Route path="/settings" element={<SettingsPage />} />
                     <Route path="*" element={<div>Page not found</div>} />
                   </Routes>
                 </DashboardLayout>

@@ -17,6 +17,8 @@ export default function QuestionPreviewDialog({ question, open, onClose, onEdit,
 
   const subject = typeof question.subjectId === 'object' && question.subjectId ? question.subjectId.name : null;
   const topic = typeof question.topicId === 'object' && question.topicId ? question.topicId.title : null;
+  const qText = question.text || (question as any).questionText;
+  const qType = question.type || (question as any).questionType;
 
   const getDifficultyBadge = (diff: string) => {
     if (diff === 'easy') return <Badge variant="success">Easy</Badge>;
@@ -44,7 +46,7 @@ export default function QuestionPreviewDialog({ question, open, onClose, onEdit,
         <div className="space-y-5 pt-2">
           <div className="flex flex-wrap items-center gap-2">
             {getDifficultyBadge(question.difficulty)}
-            <Badge variant="outline" className="capitalize">{question.type}</Badge>
+            <Badge variant="outline" className="capitalize">{qType}</Badge>
             <Badge variant="secondary">{question.marks} {question.marks === 1 ? 'Mark' : 'Marks'}</Badge>
             {question.bloomLevel && <Badge variant="outline">Bloom: {question.bloomLevel}</Badge>}
           </div>
@@ -58,10 +60,10 @@ export default function QuestionPreviewDialog({ question, open, onClose, onEdit,
 
           <div className="space-y-2">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase">Question</h4>
-            <div className="p-4 bg-muted/20 border rounded-lg whitespace-pre-wrap text-base font-medium">{question.text}</div>
+            <div className="p-4 bg-muted/20 border rounded-lg whitespace-pre-wrap text-base font-medium">{qText}</div>
           </div>
 
-          {question.type === 'multiple-choice' && question.options && (
+          {(qType === 'multiple-choice' || (qType as string) === 'mcq-single' || (qType as string) === 'mcq-multiple') && question.options && (
             <div className="space-y-2">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase">Options</h4>
               <div className="space-y-2">
