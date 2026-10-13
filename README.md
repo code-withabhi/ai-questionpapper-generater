@@ -176,9 +176,6 @@ npm --prefix server test
 
 Expected result: **12 tests passed across 3 test files**.
 
-## Presentation Slide Deck (PPT)
-
-A complete ready-to-use 12-slide presentation prompt and speaking script for your project defense / viva is provided in [`ppt.txt`](ppt.txt). You can paste it into **Gamma.app**, **ChatGPT**, **Claude**, or **Microsoft Copilot** to auto-generate visual slides.
 
 ## License
 
